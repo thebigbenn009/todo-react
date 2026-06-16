@@ -2,7 +2,10 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN npm install -g yarn && yarn install --frozen-lockfile
+
+# Just run yarn install directly
+RUN yarn install --frozen-lockfile
+
 COPY . .
 RUN yarn build
 
