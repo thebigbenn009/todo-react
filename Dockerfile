@@ -2,7 +2,7 @@
 FROM node:24-alpine AS build
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN corepack enable && yarn install --frozen-lockfile
+RUN npm install -g yarn && yarn install --frozen-lockfile
 COPY . .
 RUN yarn build
 

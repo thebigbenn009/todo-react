@@ -34,9 +34,12 @@ root — no `dir(...)` wrapping needed.
    used. Then go to Manage Jenkins → Tools → add a NodeJS installation
    named `node-24` (matches `.nvmrc`) — either pick Node 24.x or check
    "Install automatically".
-2. **Yarn needs no plugin.** Node ≥16.10 ships Corepack, so the first
-   pipeline step just runs `corepack enable` instead of baking Yarn into
-   a custom Jenkins agent image.
+2. **Yarn needs no plugin.** Node ≤22 ships Corepack, but **Node 24
+   dropped it from the default install** — `corepack enable` now fails
+   with `corepack: not found` on Node 24 (this bit us). The pipeline
+   instead runs `npm install -g yarn` as its first step, which works on
+   any Node version and needs nothing extra baked into the Jenkins agent
+   image.
 3. **Credentials Binding plugin** — needed for `withCredentials(...)` /
    `credentials(...)`. Same requirement the Maven version had.
 4. **Docker CLI on the agent** — the pipeline shells out to
@@ -54,15 +57,16 @@ root — no `dir(...)` wrapping needed.
 ```groovy
 stage("Setup") {
     steps {
-        sh "corepack enable"
+        sh "npm install -g yarn"
         sh "yarn install --frozen-lockfile"
     }
 }
 ```
-`corepack enable` turns on Yarn (bundled with Node, just switched off by
-default). `--frozen-lockfile` fails the build if `yarn.lock` is out of
-sync with `package.json`, instead of silently rewriting it — the Yarn
-equivalent of `npm ci`.
+`npm install -g yarn` works regardless of Node version (unlike
+`corepack enable`, which only works on Node ≤22 — Node 24 no longer
+ships Corepack by default). `--frozen-lockfile` fails the build if
+`yarn.lock` is out of sync with `package.json`, instead of silently
+rewriting it — the Yarn equivalent of `npm ci`.
 
 ### 2. Version App — stamp the build number onto the version
 
@@ -177,7 +181,7 @@ pipeline {
 
         stage("Setup") {
             steps {
-                sh "corepack enable"
+                sh "npm install -g yarn"
                 sh "yarn install --frozen-lockfile"
             }
         }
@@ -261,7 +265,7 @@ pipeline {
   FROM node:24-alpine AS build
   WORKDIR /app
   COPY package.json yarn.lock ./
-  RUN corepack enable && yarn install --frozen-lockfile
+  RUN npm install -g yarn && yarn install --frozen-lockfile
   COPY . .
   RUN yarn build
 
