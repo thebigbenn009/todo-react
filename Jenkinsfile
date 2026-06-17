@@ -85,6 +85,28 @@ stage("Setup") {
                 }
             }
         }
+
+               stage("Commit version update") {
+                    steps {
+                          script {
+                                            withCredentials([usernamePassword(credentialsId: 'git-ssh-key', passwordVariable: 'PASS', usernameVariable: 'USER')]){
+                                                sh 'git config --global user.email "jenkins@example.com"'
+                                                sh 'git config --global user.name "jenkins"'
+
+                                                sh 'git status'
+                                                sh 'git branch'
+                                                sh 'git config --list'
+
+                                              sh "git remote set-url origin https://${USER}:${PASS}@github.com/thebigbenn009/todo-react.git"
+                                                sh 'git add .'
+                                                sh 'git commit -m "ci: version bump [skip ci]"'
+                                               sh "git tag v${env.NEW_VERSION}"
+                                               sh "git push origin HEAD:${env.BRANCH_NAME}"
+                                               sh "git push origin v${env.NEW_VERSION}"
+                                            }
+                    }
+                }
+
     }
 }
 
