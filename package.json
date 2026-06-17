@@ -1,6 +1,6 @@
 {
   "name": "moz-todo-react",
-  "version": "0.3.0",
+  "version": "0.3.0-17",
   "private": true,
   "homepage": "https://mdn.github.io/todo-react/",
   "type": "module",
