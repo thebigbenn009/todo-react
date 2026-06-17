@@ -72,8 +72,16 @@ stage("Setup") {
            stage('deploy') {
 
             steps {
-                script {
-                   echo 'deploying docker image...'
+ script {
+                    echo 'Deploying docker image to EC2...'
+
+                    def ec2Instance = "ubuntu@54.227.125.3"
+                    def shellCmd = "bash ./server-cmds.sh ${env.FULL_IMAGE}"
+
+                    sshagent(['ec2-server-key']) {
+                        sh "scp -o StrictHostKeyChecking=no server-cmds.sh docker-compose.yaml ${ec2Instance}:/home/ubuntu"
+                        sh "ssh -o StrictHostKeyChecking=no ${ec2Instance} '${shellCmd}'"
+                    }
                 }
             }
         }
